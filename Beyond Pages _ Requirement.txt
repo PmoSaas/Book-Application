@@ -1,0 +1,320 @@
+Beyond Pages: Application Reference Document
+This document provides a comprehensive overview of the "Beyond Pages" application, detailing its purpose, features, technical architecture, and core functionalities.
+
+1. Application Overview
+"Beyond Pages" is a web-based book tracking and community engagement platform designed for avid readers. It allows users to manage their reading lists, track progress, write reviews, and connect with a vibrant community of fellow book enthusiasts. The application incorporates gamification elements to encourage reading and active participation, including XP, leveling, leagues, and badges. It also integrates with external APIs for book data and AI-powered Q&A.
+
+2. Key Features
+Personalized Book Tracking:
+
+Add books to "Want to Read," "Currently Reading," and "Finished" lists.
+
+Update book status and progress.
+
+Delete books from lists.
+
+Add and edit book reviews with star ratings.
+
+Fetch book details (title, author, ISBN, genres) from the Open Library API by ISBN or title/author search.
+
+"Simulate Camera Scan" for ISBN input.
+
+Gamification System:
+
+Earn Experience Points (XP) for various activities (e.g., adding reviews, replying to community posts, hosting events).
+
+Level up based on accumulated XP.
+
+Participate in a weekly reading tournament with leagues (Copper, Silver, Gold, Diamond, Platinum) based on level.
+
+Gain bonus XP for top ranks in the tournament.
+
+Earn badges based on reading habits (e.g., genre-specific badges).
+
+Community Hub:
+
+View simulated public reading posts from other users.
+
+Like and reply to community posts.
+
+Follow/unfollow other users to see their public activities.
+
+Posts from users you follow or who are reading similar books are prioritized.
+
+Share posts to social media (simulated links).
+
+Events & Book Groups:
+
+Explore simulated book-related events (virtual and offline).
+
+RSVP to events.
+
+"Host" events and claim XP for hosting.
+
+Discover simulated book discussion groups.
+
+View personal group memberships.
+
+User Profile Management:
+
+Customize profile with a bio, social media links, and a profile picture (simulated upload).
+
+Toggle profile visibility (public/private).
+
+View personal XP, level, current league, and earned badges.
+
+See favorite genres based on added books.
+
+AI Integration (Gemini API):
+
+Ask questions about "Currently Reading" books to the Gemini AI model.
+
+3. Technology Stack
+Frontend: React.js
+
+Styling: Tailwind CSS (for utility-first styling)
+
+Database: Google Cloud Firestore (NoSQL cloud database)
+
+Authentication: Firebase Authentication (Anonymous and Custom Token for Canvas environment)
+
+External APIs:
+
+Open Library API: Used for fetching book metadata (title, author, ISBN, genres) based on ISBN or search queries.
+
+Gemini API (gemini-2.0-flash): Used for AI-powered Q&A about books.
+
+Deployment Environment: Google Canvas (simulated environment for Firebase and API key injection)
+
+4. Core Components & Their Responsibilities
+The application is structured into modular React components, each responsible for a specific part of the UI and functionality.
+
+App.js (Main Application File):
+
+Initializes Firebase (App, Firestore, Auth).
+
+Manages global application state (current view, user authentication status, Firebase instances, user ID).
+
+Handles user authentication (anonymous sign-in or custom token).
+
+Orchestrates data flow to child components.
+
+Manages the main navigation.
+
+Provides the handleGainXP function to child components via a ref to the Profile component.
+
+components/Utilities.js:
+
+Contains global constants (e.g., LEAGUE_LEVEL_THRESHOLDS, COMMON_GENRES).
+
+Includes utility functions (e.g., getLeagueInfo, calculateBonusXP).
+
+Exports reusable UI components like NavButton and StarRating.
+
+components/Modals.js:
+
+Provides generic Modal component for overlays.
+
+Exports specific modal components:
+
+ShareModal: For sharing community posts.
+
+GeminiQAModal: For interacting with the Gemini AI.
+
+AddReviewModal: For adding new book reviews.
+
+EditReviewModal: For modifying existing book reviews.
+
+BookSelectionModal: For selecting a book from multiple search results.
+
+components/AddBookForm.js:
+
+Manages the form for adding new books.
+
+Integrates with the Open Library API to fetch book details by ISBN or title/author.
+
+Handles "simulated camera scan" for ISBN.
+
+Adds new book documents to Firestore.
+
+components/BookList.js:
+
+Fetches and displays user's books from Firestore, categorized by status ("Currently Reading," "Want to Read," "Finished").
+
+Allows updating book status and deleting books.
+
+Triggers GeminiQAModal, AddReviewModal, and EditReviewModal.
+
+Generates and displays simulated book recommendations based on other users' reading lists.
+
+components/Community.js:
+
+Displays simulated public reading posts from other users.
+
+Manages "follow" functionality (updates user's profile in Firestore).
+
+Handles liking posts/replies and adding replies (updates local state for simulation).
+
+Triggers ShareModal.
+
+Awards XP for replies.
+
+components/BookGroups.js:
+
+Displays static/mock data for book discussion groups.
+
+Categorizes groups into "Groups in the City" and "Membership."
+
+components/Events.js:
+
+Displays static/mock data for book-related events.
+
+Allows users to RSVP to events (updates local state).
+
+Allows "hosting" events and claiming XP for them.
+
+components/Profile.js:
+
+Manages user profile data (bio, social links, profile picture, privacy setting).
+
+Persists profile data to Firestore.
+
+Displays user's XP, level, league, and earned badges.
+
+Calculates and displays favorite genres based on user's added books.
+
+Exposes handleGainXP method to update user's XP and level in Firestore.
+
+components/Tournament.js:
+
+Displays a simulated weekly reading tournament leaderboard.
+
+Shows current season and previous season's eliminated players.
+
+Allows simulating a "weekly reset" which:
+
+Resets XP for all participants.
+
+Advances levels for top performers.
+
+Awards bonus XP to top finishers.
+
+Increments the tournament season (persisted in a public Firestore collection).
+
+5. Data Model (Firestore)
+The application uses Firestore to persist user-specific and public data.
+
+User-Specific Data (/artifacts/{appId}/users/{userId}/):
+
+books collection: Each document represents a book added by the user.
+
+id (Document ID)
+
+title (string)
+
+author (string)
+
+isbn (string, optional)
+
+status (string: 'to-read', 'reading', 'finished')
+
+genres (array of strings)
+
+createdAt (timestamp)
+
+progress (string, e.g., 'Not started', '50% complete', only for 'reading' status)
+
+reviewText (string, optional, for 'finished' books)
+
+rating (number, optional, 1-5, for 'finished' books)
+
+profile collection (single document: userProfile): Stores user's personal and gamification data.
+
+bio (string)
+
+socialMediaLinks (map: { facebook: string, twitter: string, linkedin: string })
+
+profilePicUrl (string)
+
+xp (number)
+
+level (number)
+
+claimedEventXP (map: { eventId: boolean } to track claimed XP for events)
+
+following (array of strings: user IDs of profiles the current user follows)
+
+followers (array of strings: user IDs of profiles following the current user - mocked for now)
+
+isProfilePublic (boolean)
+
+createdAt (timestamp)
+
+updatedAt (timestamp)
+
+Public Data (/artifacts/{appId}/public/data/):
+
+tournamentSeason collection (single document: seasonInfo):
+
+season (number: current tournament season)
+
+tournamentHistory collection: Each document represents a completed tournament season.
+
+id (Document ID, e.g., '1', '2')
+
+season (number)
+
+participants (array of objects: { id: string, name: string, xp: number, level: number, tournamentStatus: 'promoted' | 'eliminated' })
+
+resetAt (timestamp)
+
+6. Gamification Logic
+The gamification system is central to encouraging user engagement:
+
+XP (Experience Points): Awarded for specific actions (e.g., 5 XP for a community reply, 15 XP for a book review, 20 XP for hosting an event).
+
+Levels: Calculated based on total XP. The XP required to level up increases with each level (e.g., 50 XP for Level 1, then +20 XP for each subsequent level).
+
+Leagues: Users are grouped into leagues (Copper, Silver, Gold, Diamond, Platinum) based on their current level.
+
+Tournament: A weekly simulated tournament where users compete based on their XP. Top performers advance a level and receive bonus XP for the next week.
+
+Badges: Awarded based on reading habits, such as reading a certain number of books in a specific genre.
+
+7. API Integrations
+Open Library API:
+
+Used in AddBookForm.js to fetch book information.
+
+Queries are made to https://openlibrary.org/api/books for ISBN lookups and https://openlibrary.org/search.json for title/author searches.
+
+Data is parsed to extract relevant book details like title, author, ISBN, and subjects (genres).
+
+Gemini API:
+
+Used in GeminiQAModal.js to provide AI-powered answers to user questions about books.
+
+A gemini-2.0-flash model is called with a prompt constructed from the book's title, author, and the user's question.
+
+8. Scalability & Future Enhancements
+The current architecture, leveraging React and Firestore, provides a solid foundation for scalability. Future enhancements could include:
+
+Real-time Community Posts: Implement actual real-time community posts using a public Firestore collection instead of mock data.
+
+Firebase Storage: Integrate Firebase Storage for actual profile picture uploads and other media.
+
+Advanced Search & Filtering: Add more robust search and filtering options for books, events, and groups.
+
+Notifications: Implement in-app notifications for new replies, event reminders, tournament results, etc.
+
+Chat Functionality: Add direct messaging or group chat features.
+
+Personalized Recommendations: Develop more sophisticated recommendation algorithms based on user reading history and preferences.
+
+Full Tournament Backend: Move tournament logic to a Cloud Function to ensure fairness and prevent client-side manipulation.
+
+Mobile App Development: Rebuild using React Native or Flutter for native iOS/Android apps, leveraging the existing Firebase backend.
+
+User Onboarding & Tutorials: Improve the first-time user experience.
+
+This document serves as a comprehensive guide to understanding the "Beyond Pages" application.
